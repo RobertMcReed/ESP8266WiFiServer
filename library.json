@@ -1,0 +1,25 @@
+{
+  "name": "ESP8266WiFiServer",
+  "version": "1.0.0",
+  "description": "Library for initiating a WiFi connection and managing a server.",
+  "keywords": "esp8266, WiFi, ap, WiFiManager, ota",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RobertMcReed/ESP8266WiFiServer.git"
+  },
+  "authors": [
+    {
+      "name": "Robert Reed",
+      "email": "robert.mc.reed@gmail.com",
+      "url": "https://github.com/RobertMcReed",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/RobertMcReed/ESP8266WiFiServer",
+  "dependencies": {
+    "tzapu/WiFiManager": "^0.16.0"
+  },
+  "frameworks": "arduino",
+  "platforms": "*"
+}

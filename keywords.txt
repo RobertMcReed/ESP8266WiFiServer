@@ -1,0 +1,12 @@
+ESP8266WifiServer	      KEYWORD1
+onRoot	                KEYWORD2
+begin	                  KEYWORD2
+loop	                  KEYWORD2
+disableLED              KEYWORD2
+enableCors              KEYWORD2
+root	                  KEYWORD2
+post	                  KEYWORD2
+get 	                  KEYWORD2
+resetCredentials	      KEYWORD2
+server	                KEYWORD3
+wifiManager	            KEYWORD3

@@ -13,13 +13,13 @@
 // default PW: "newcouch"
 ESP8266AutoIOT app;
 
-// specify the server port
-// ESP8266AutoIOT app(80);
+// explicitly enable/disable ArduinoOTA (false by default if no pw provided)
+// ESP8266AutoIOT app(true);
 
 // Specify access point and password
-// ESP8266AutoIOT app("my_ap", "my_pw"); 
+// ESP8266AutoIOT app("my_ap", "my_pw"); // OTA enabled by default if pw provided
 
-// ESP8266AutoIOT app(80, "my_ap", "my_pw"); // do it all
+// ESP8266AutoIOT app("my_ap", "my_pw", false); // do it all (set ap/pw and disable OTA)
 
 // You can access the ESP8266WebServer directly via app.server
 // You can access the WifiManager directly via app.wifiManager
@@ -112,9 +112,6 @@ void setup() {
 
   // Or you can use the body to return a dynamic response
   app.post("/triple", triple);
-
-  // and you can set the content type manually if you'd like, but it's set to application/json by default
-  app.post("/maths", maths, "application/json");
 
   // You must register all of your routes before calling app.begin();
   app.begin();

@@ -13,6 +13,7 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 #include <ESP8266mDNS.h>
+#include <ArduinoOTA.h>
 
 typedef void (*voidCallback) ();
 typedef void (*voidCallbackStr) (String);
@@ -26,9 +27,9 @@ class ESP8266AutoIOT
 
   public:
     ESP8266AutoIOT();
-    ESP8266AutoIOT(int port);
+    ESP8266AutoIOT(bool enableOTA);
     ESP8266AutoIOT(char* accessPoint, char* password);
-    ESP8266AutoIOT(int port, char* accessPoint, char* password);
+    ESP8266AutoIOT(char* accessPoint, char* password, bool enableOTA);
 
     void loop();
     void begin();
@@ -53,10 +54,12 @@ class ESP8266AutoIOT
     void post(String path, stringCallbackStr fn);
 
   private:
-    void _setup();
+    void _setup(bool enableOTA);
 
     void _ledOn();
     void _ledOff();
+    void _enableOTA();
+    void _disableOTA();
     void _digitalWrite(int value);
 
     void _handleNotFound();
@@ -73,6 +76,7 @@ class ESP8266AutoIOT
 
     bool _hasBegun;
     bool _ledEnabled;
+    bool _otaEnabled;
     bool _corsEnabled;
     bool _rootHandled;
 
@@ -80,7 +84,6 @@ class ESP8266AutoIOT
     char* _accessPoint;
     String _corsOrigin;
     
-    int _port;
     int _LED_ON = LOW;
     int _LED_OFF = HIGH;
     int _LED = LED_BUILTIN;

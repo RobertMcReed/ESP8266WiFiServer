@@ -6,20 +6,17 @@
 
 #include "ESP8266AutoIOT.h"
 #include "Arduino.h"
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>         //https://github.com/RobertMcReed/WiFiManager.git#ota
-#include <ESP8266mDNS.h>
+#include <ESP8266WiFi.h>        //https://github.com/esp8266/Arduino
+#include <DNSServer.h>          // Included with core
+#include <ESP8266WebServer.h>   // Included with core
+#include <WiFiManager.h>        //https://github.com/RobertMcReed/WiFiManager.git#ota
+#include <ESP8266mDNS.h>        // Included with core
+#include <ArduinoOTA.h>         // Included with core
 
-void ESP8266AutoIOT::_setup()
+void ESP8266AutoIOT::_setup(bool enableOTA)
 {
+  _otaEnabled = enableOTA;
   _hasBegun = false;
-
-  if (!_port)
-  {
-    _port = 80;
-  }
 
   if (!_accessPoint)
   {
@@ -40,33 +37,31 @@ void ESP8266AutoIOT::_setup()
   _corsEnabled = false;
 
   WiFiManager wifiManager;
-  server = new ESP8266WebServer(_port);
+  server = new ESP8266WebServer(80);
 }
 
 ESP8266AutoIOT::ESP8266AutoIOT()
 {
-  _setup();
+  _setup(false);
 }
 
-ESP8266AutoIOT::ESP8266AutoIOT(int port)
+ESP8266AutoIOT::ESP8266AutoIOT(bool enableOTA)
 {
-  _port = port;
-  _setup();
+  _setup(enableOTA);
 }
 
 ESP8266AutoIOT::ESP8266AutoIOT(char* accessPoint, char* password)
 {
   _accessPoint = accessPoint;
   _password = password;
-  _setup();
+  _setup(true);
 }
 
-ESP8266AutoIOT::ESP8266AutoIOT(int port, char* accessPoint, char* password)
+ESP8266AutoIOT::ESP8266AutoIOT(char* accessPoint, char* password, bool enableOTA)
 {
   _accessPoint = accessPoint;
   _password = password;
-  _port = port;
-  _setup();
+  _setup(enableOTA);
 }
 
 void ESP8266AutoIOT::_digitalWrite(int value)
@@ -266,6 +261,14 @@ void ESP8266AutoIOT::begin()
 
   server->begin();
   Serial.println("HTTP server started");
+
+  if (_otaEnabled) {
+    ArduinoOTA.setPassword(_password);
+    ArduinoOTA.begin();
+    Serial.println("ArduinoOTA enabled!");
+  } else {
+    Serial.println("ArduinoOTA disabled.");
+  }
   _ledOff();
 }
 
@@ -294,6 +297,10 @@ void ESP8266AutoIOT::loop()
     _ledOff();
     server->handleClient();
     _ledOff();
+    if (_otaEnabled)
+    {
+      ArduinoOTA.handle();
+    }
   }
 }
 

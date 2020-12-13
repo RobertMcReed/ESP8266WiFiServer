@@ -1,4 +1,4 @@
-ESP8266WifiServer	      KEYWORD1
+ESP8266AutoIOT          KEYWORD1
 onRoot	                KEYWORD2
 begin	                  KEYWORD2
 loop	                  KEYWORD2

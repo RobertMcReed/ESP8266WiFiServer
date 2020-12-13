@@ -1,11 +1,11 @@
 /*
-  ESP8266WifiServer.h - Library for initiating a WiFi connection and managing a server.
+  ESP8266AutoIOT.h - Library for initiating a WiFi connection and managing a server.
   Created by Robert Reed, September 25, 2020.
   Released into the public domain.
 */
 
-#ifndef ESP8266WifiServer_h
-#define ESP8266WifiServer_h
+#ifndef ESP8266AutoIOT_h
+#define ESP8266AutoIOT_h
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
@@ -19,16 +19,16 @@ typedef void (*voidCallbackStr) (String);
 typedef String (*stringCallback) ();
 typedef String (*stringCallbackStr) (String);
 
-class ESP8266WifiServer
+class ESP8266AutoIOT
 {
   WiFiManager wifiManager;
   ESP8266WebServer* server;
 
   public:
-    ESP8266WifiServer();
-    ESP8266WifiServer(int port);
-    ESP8266WifiServer(char* accessPoint, char* password);
-    ESP8266WifiServer(int port, char* accessPoint, char* password);
+    ESP8266AutoIOT();
+    ESP8266AutoIOT(int port);
+    ESP8266AutoIOT(char* accessPoint, char* password);
+    ESP8266AutoIOT(int port, char* accessPoint, char* password);
 
     void loop();
     void begin();

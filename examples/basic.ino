@@ -1,25 +1,25 @@
 /*
-  ESP8266WifiServer - Library for initiating a WiFi connection and managing a server.
+  ESP8266AutoIOT - Library for initiating a WiFi connection and managing a server.
   Created by Robert Reed, September 25, 2020.
   Released into the public domain.
 */
 
 #include <ArduinoJson.h>
-#include <ESP8266WifiServer.h>
+#include <ESP8266AutoIOT.h>
 
 // Instantiate the app
 
 // default AP: "esp8266"
 // default PW: "newcouch"
-ESP8266WifiServer app;
+ESP8266AutoIOT app;
 
 // specify the server port
-// ESP8266WifiServer app(80);
+// ESP8266AutoIOT app(80);
 
 // Specify access point and password
-// ESP8266WifiServer app("my_ap", "my_pw"); 
+// ESP8266AutoIOT app("my_ap", "my_pw"); 
 
-// ESP8266WifiServer app(80, "my_ap", "my_pw"); // do it all
+// ESP8266AutoIOT app(80, "my_ap", "my_pw"); // do it all
 
 // You can access the ESP8266WebServer directly via app.server
 // You can access the WifiManager directly via app.wifiManager

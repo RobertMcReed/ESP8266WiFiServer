@@ -1,4 +1,4 @@
-# ESP8266WiFiServer
+# ESP8266AutoIOT
 
 **Disclaimer:** I do not know how to properly write c++, so you should probably not use this library.
 

@@ -1,18 +1,18 @@
 /*
-  ESP8266WifiServer.cpp - Library for initiating a WiFi connection and managing a server.
+  ESP8266AutoIOT.cpp - Library for initiating a WiFi connection and managing a server.
   Created by Robert Reed, September 25, 2020.
   Released into the public domain.
 */
 
-#include "ESP8266WifiServer.h"
+#include "ESP8266AutoIOT.h"
 #include "Arduino.h"
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-#include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h>         //https://github.com/RobertMcReed/WiFiManager.git#ota
 #include <ESP8266mDNS.h>
 
-void ESP8266WifiServer::_setup()
+void ESP8266AutoIOT::_setup()
 {
   _hasBegun = false;
 
@@ -43,25 +43,25 @@ void ESP8266WifiServer::_setup()
   server = new ESP8266WebServer(_port);
 }
 
-ESP8266WifiServer::ESP8266WifiServer()
+ESP8266AutoIOT::ESP8266AutoIOT()
 {
   _setup();
 }
 
-ESP8266WifiServer::ESP8266WifiServer(int port)
+ESP8266AutoIOT::ESP8266AutoIOT(int port)
 {
   _port = port;
   _setup();
 }
 
-ESP8266WifiServer::ESP8266WifiServer(char* accessPoint, char* password)
+ESP8266AutoIOT::ESP8266AutoIOT(char* accessPoint, char* password)
 {
   _accessPoint = accessPoint;
   _password = password;
   _setup();
 }
 
-ESP8266WifiServer::ESP8266WifiServer(int port, char* accessPoint, char* password)
+ESP8266AutoIOT::ESP8266AutoIOT(int port, char* accessPoint, char* password)
 {
   _accessPoint = accessPoint;
   _password = password;
@@ -69,7 +69,7 @@ ESP8266WifiServer::ESP8266WifiServer(int port, char* accessPoint, char* password
   _setup();
 }
 
-void ESP8266WifiServer::_digitalWrite(int value)
+void ESP8266AutoIOT::_digitalWrite(int value)
 {
    if (_ledEnabled)
    {
@@ -77,7 +77,7 @@ void ESP8266WifiServer::_digitalWrite(int value)
    }
 }
 
-void ESP8266WifiServer::_sendCorsHeaderIfEnabled()
+void ESP8266AutoIOT::_sendCorsHeaderIfEnabled()
 {
    if (_corsEnabled)
    {
@@ -85,7 +85,7 @@ void ESP8266WifiServer::_sendCorsHeaderIfEnabled()
    }
 }
 
-void ESP8266WifiServer::_handleGetRequestVoidFn(voidCallback fn)
+void ESP8266AutoIOT::_handleGetRequestVoidFn(voidCallback fn)
 {
   _ledOn();
   if (server->method() == HTTP_GET) {
@@ -98,7 +98,7 @@ void ESP8266WifiServer::_handleGetRequestVoidFn(voidCallback fn)
   _ledOff();
 }
 
-void ESP8266WifiServer::_handleGetRequestStr(String response, bool isHtml)
+void ESP8266AutoIOT::_handleGetRequestStr(String response, bool isHtml)
 {
   _ledOn();
   if (server->method() == HTTP_GET) {
@@ -111,7 +111,7 @@ void ESP8266WifiServer::_handleGetRequestStr(String response, bool isHtml)
   _ledOff();
 }
 
-void ESP8266WifiServer::_handleGetRequestStrFn(stringCallback fn, bool isHtml)
+void ESP8266AutoIOT::_handleGetRequestStrFn(stringCallback fn, bool isHtml)
 {
   _ledOn();
   if (server->method() == HTTP_GET) {
@@ -125,7 +125,7 @@ void ESP8266WifiServer::_handleGetRequestStrFn(stringCallback fn, bool isHtml)
   _ledOff();
 }
 
-void ESP8266WifiServer::_handlePostRequestVoidFn(voidCallbackStr fn)
+void ESP8266AutoIOT::_handlePostRequestVoidFn(voidCallbackStr fn)
 {
   _ledOn();
   if (server->method() == HTTP_POST) {
@@ -145,7 +145,7 @@ void ESP8266WifiServer::_handlePostRequestVoidFn(voidCallbackStr fn)
 }
 
 
-void ESP8266WifiServer::_handlePostRequestStrFn(stringCallbackStr fn)
+void ESP8266AutoIOT::_handlePostRequestStrFn(stringCallbackStr fn)
 {
   _ledOn();
   if (server->method() == HTTP_POST) {
@@ -164,7 +164,7 @@ void ESP8266WifiServer::_handlePostRequestStrFn(stringCallbackStr fn)
   _ledOff();
 }
 
-void ESP8266WifiServer::_handleNotFound()
+void ESP8266AutoIOT::_handleNotFound()
 {
   _ledOn();
   String message = "File Not Found\n\n";
@@ -182,66 +182,66 @@ void ESP8266WifiServer::_handleNotFound()
   _ledOff();
 }
 
-void ESP8266WifiServer::get(String path, stringCallback fn, bool isHtml) {
-  server->on(path, std::bind(&ESP8266WifiServer::_handleGetRequestStrFn, this, fn, isHtml));
+void ESP8266AutoIOT::get(String path, stringCallback fn, bool isHtml) {
+  server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestStrFn, this, fn, isHtml));
 }
 
-void ESP8266WifiServer::get(String path, stringCallback fn) {
-  server->on(path, std::bind(&ESP8266WifiServer::_handleGetRequestStrFn, this, fn, false));
+void ESP8266AutoIOT::get(String path, stringCallback fn) {
+  server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestStrFn, this, fn, false));
 }
 
-void ESP8266WifiServer::get(String path, voidCallback fn) {
-  server->on(path, std::bind(&ESP8266WifiServer::_handleGetRequestVoidFn, this, fn));
+void ESP8266AutoIOT::get(String path, voidCallback fn) {
+  server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestVoidFn, this, fn));
 }
 
-void ESP8266WifiServer::get(String path, String response) {
-  server->on(path, std::bind(&ESP8266WifiServer::_handleGetRequestStr, this, response, false));
+void ESP8266AutoIOT::get(String path, String response) {
+  server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestStr, this, response, false));
 }
 
-void ESP8266WifiServer::get(String path, String response, bool isHtml) {
-  server->on(path, std::bind(&ESP8266WifiServer::_handleGetRequestStr, this, response, isHtml));
+void ESP8266AutoIOT::get(String path, String response, bool isHtml) {
+  server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestStr, this, response, isHtml));
 }
 
-void ESP8266WifiServer::post(String path, voidCallbackStr fn) {
-  server->on(path, std::bind(&ESP8266WifiServer::_handlePostRequestVoidFn, this, fn));
+void ESP8266AutoIOT::post(String path, voidCallbackStr fn) {
+  server->on(path, std::bind(&ESP8266AutoIOT::_handlePostRequestVoidFn, this, fn));
 }
 
-void ESP8266WifiServer::post(String path, stringCallbackStr fn) {
-  server->on(path, std::bind(&ESP8266WifiServer::_handlePostRequestStrFn, this, fn));
+void ESP8266AutoIOT::post(String path, stringCallbackStr fn) {
+  server->on(path, std::bind(&ESP8266AutoIOT::_handlePostRequestStrFn, this, fn));
 }
 
-void ESP8266WifiServer::root(stringCallback fn) {
+void ESP8266AutoIOT::root(stringCallback fn) {
   _rootHandled = true;
   get("/", fn, true);
 }
 
-void ESP8266WifiServer::root(String response) {
+void ESP8266AutoIOT::root(String response) {
   _rootHandled = true;
   get("/", response, true);
 }
 
-void ESP8266WifiServer::_handleDefaultRoot()
+void ESP8266AutoIOT::_handleDefaultRoot()
 {
   root("Success");
 }
 
-void ESP8266WifiServer::disableLED()
+void ESP8266AutoIOT::disableLED()
 {
   _ledEnabled = false;
 }
 
-void ESP8266WifiServer::enableCors()
+void ESP8266AutoIOT::enableCors()
 {
   _corsEnabled = true;
 }
 
-void ESP8266WifiServer::enableCors(String origin)
+void ESP8266AutoIOT::enableCors(String origin)
 {
   _corsEnabled = true;
   _corsOrigin = origin;
 }
 
-void ESP8266WifiServer::begin()
+void ESP8266AutoIOT::begin()
 {
   _hasBegun = true;
   if (_ledEnabled)
@@ -262,14 +262,14 @@ void ESP8266WifiServer::begin()
     _handleDefaultRoot();
   }
 
-  server->onNotFound(std::bind(&ESP8266WifiServer::_handleNotFound, this));
+  server->onNotFound(std::bind(&ESP8266AutoIOT::_handleNotFound, this));
 
   server->begin();
   Serial.println("HTTP server started");
   _ledOff();
 }
 
-void ESP8266WifiServer::loop()
+void ESP8266AutoIOT::loop()
 {
   if (!_hasBegun)
   {
@@ -297,17 +297,17 @@ void ESP8266WifiServer::loop()
   }
 }
 
-void ESP8266WifiServer::_ledOn()
+void ESP8266AutoIOT::_ledOn()
 {
   _digitalWrite(_LED_ON);
 }
 
-void ESP8266WifiServer::_ledOff()
+void ESP8266AutoIOT::_ledOff()
 {
   _digitalWrite(_LED_OFF);
 }
 
-void ESP8266WifiServer::resetCredentials()
+void ESP8266AutoIOT::resetCredentials()
 {
   wifiManager.resetSettings();
 }

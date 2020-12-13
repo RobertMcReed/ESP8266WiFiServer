@@ -1,11 +1,11 @@
 {
-  "name": "esp8266AutoIOT",
+  "name": "ESP8266AutoIOT",
   "version": "1.0.0",
   "description": "Library for initiating a WiFi connection, managing a server, and enabling OTA updates.",
   "keywords": "esp8266, WiFi, ap, WiFiManager, ota",
   "repository": {
     "type": "git",
-    "url": "https://github.com/RobertMcReed/esp8266AutoIOT.git"
+    "url": "https://github.com/RobertMcReed/ESP8266AutoIOT.git"
   },
   "authors": [
     {
@@ -16,7 +16,7 @@
     }
   ],
   "license": "MIT",
-  "homepage": "https://github.com/RobertMcReed/esp8266AutoIOT",
+  "homepage": "https://github.com/RobertMcReed/ESP8266AutoIOT",
   "dependencies": {
     "WiFiManager": "https://github.com/RobertMcReed/WiFiManager.git#ota"
   },

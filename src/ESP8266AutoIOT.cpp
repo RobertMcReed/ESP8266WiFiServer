@@ -51,6 +51,7 @@ void ESP8266AutoIOT::_readConfig()
         DeserializationError configJsonError = deserializeJson(jsonConfig, buf.get());
 
         serializeJsonPretty(jsonConfig, Serial);
+        Serial.println();
         if (!configJsonError) {
 
           strcpy(_accessPoint, jsonConfig["hostname"]);
@@ -347,7 +348,7 @@ void ESP8266AutoIOT::begin()
   if (!wifiManager.autoConnect(_accessPoint, _password)) {
     // If we've hit the config portal timeout, then retstart
     
-    Serial.println("[ERROR] Failed to connect and hit timeout, restarting");
+    Serial.println("[ERROR] Failed to connect and hit timeout, restarting after 10 seconds...");
     delay(10000);
     ESP.restart();
 
@@ -434,4 +435,14 @@ void ESP8266AutoIOT::resetCredentials()
 {
   Serial.println("[WARNING] Resetting credentials!");
   wifiManager.resetSettings();
+}
+
+void ESP8266AutoIOT::softReset() {
+  Serial.println("__SOFT_RESET__");
+  Serial.println("Formatting flash memory...");
+  LittleFS.format();
+  delay(100);
+  Serial.println("Resetting WiFi Manager settings...");
+  wifiManager.resetSettings();
+  delay(1000);
 }

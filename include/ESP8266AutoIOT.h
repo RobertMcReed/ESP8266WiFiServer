@@ -42,6 +42,7 @@ class ESP8266AutoIOT
     void enableCors();
     void enableCors(String corsOrigin);
     
+    void softReset();
     void resetCredentials();
     
     void root(String response);

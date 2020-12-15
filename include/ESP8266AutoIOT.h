@@ -25,14 +25,14 @@ typedef String (*stringCallbackStr) (String);
 
 class ESP8266AutoIOT
 {
-  WiFiManager wifiManager;
-  ESP8266WebServer* server;
-
   public:
     ESP8266AutoIOT();
     ESP8266AutoIOT(bool enableOTA);
     ESP8266AutoIOT(char* accessPoint, char* password);
     ESP8266AutoIOT(char* accessPoint, char* password, bool enableOTA);
+
+    ESP8266WebServer* server;
+    WiFiManager wifiManager;
 
     void loop();
     void begin();
@@ -86,6 +86,7 @@ class ESP8266AutoIOT
     bool _otaEnabled;
     bool _corsEnabled;
     bool _rootHandled;
+    bool _lastWiFiStatus;
 
     char _password[40];
     char _accessPoint[40];

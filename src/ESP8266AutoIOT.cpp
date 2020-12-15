@@ -446,3 +446,19 @@ void ESP8266AutoIOT::softReset() {
   wifiManager.resetSettings();
   delay(1000);
 }
+
+void ESP8266AutoIOT::hardReset() {
+  Serial.println("__HARD_RESET__");
+  Serial.println("Formatting flash memory...");
+  LittleFS.format();
+  delay(100);
+  Serial.println("Resetting WiFi Manager settings...");
+  wifiManager.resetSettings();
+  delay(1000);
+  Serial.println("Disconnecting from WiFi...");
+  WiFi.disconnect();
+  delay(1000);
+  Serial.println("Resetting ESP...");
+  ESP.restart();
+  delay(5000);
+}

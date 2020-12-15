@@ -14,6 +14,9 @@
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
+#include <ArduinoJson.h>         // https://github.com/bblanchon/ArduinoJson ~v6.x.x
+#include <WiFiUdp.h>             // For the below
+#include <LittleFS.h>
 
 typedef void (*voidCallback) ();
 typedef void (*voidCallbackStr) (String);
@@ -54,6 +57,8 @@ class ESP8266AutoIOT
     void post(String path, stringCallbackStr fn);
 
   private:
+    void _readConfig();
+    void _writeConfig();
     void _setup(bool enableOTA);
 
     void _ledOn();
@@ -80,8 +85,10 @@ class ESP8266AutoIOT
     bool _corsEnabled;
     bool _rootHandled;
 
-    char* _password;
-    char* _accessPoint;
+    char _password[40];
+    char _accessPoint[40];
+    char _ACCESS_POINT[40]; // defalt ap for script
+    char _PW[40]; // defalt pw for script
     String _corsOrigin;
     
     int _LED_ON = LOW;

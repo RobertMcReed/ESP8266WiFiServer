@@ -16,14 +16,22 @@
 #include <WiFiUdp.h>            // For the below
 #include <LittleFS.h>
 
-const unsigned long CONNECT_TIMEOUT = 30; // How long to attempt to connect to saved WiFi before going into AP mode
-const unsigned long AP_TIMEOUT = 60; // Wait 60 Seconds in the config portal before trying again the original WiFi creds
+const unsigned long __CONNECT_TIMEOUT__ = 30; // How long to attempt to connect to saved WiFi before going into AP mode
+const unsigned long __AP_TIMEOUT__ = 60; // Wait 60 Seconds in the config portal before trying again the original WiFi creds
 // const char* defaultAp = "esp8266";
 
-bool shouldSaveConfig = false;
+
+void (*__onEnterConfig__)() = NULL;
+void __handleOnEnterConfig__(WiFiManager *myWiFiManager);
+
+bool __shouldSaveConfig__ = false;
+
+void __handleOnEnterConfig__(WiFiManager *myWiFiManager) {
+  __onEnterConfig__();
+}
 
 void saveConfigCallback () {
-  shouldSaveConfig = true;
+  __shouldSaveConfig__ = true;
 }
 
 void ESP8266AutoIOT::_readConfig()
@@ -104,7 +112,7 @@ void ESP8266AutoIOT::_writeConfig() {
 
   serializeJson(configJsonDoc, configFile);
   configFile.close();
-  shouldSaveConfig = false;
+  __shouldSaveConfig__ = false;
 }
 
 void ESP8266AutoIOT::_setup(bool enableOTA)
@@ -332,6 +340,21 @@ void ESP8266AutoIOT::enableCors(String origin)
   _corsOrigin = origin;
 }
 
+void ESP8266AutoIOT::setOnConnect(void (*onConnect)())
+{
+  _onConnect = onConnect;
+}
+
+void ESP8266AutoIOT::setOnDisconnect(void (*onDisconnect)())
+{
+  _onDisconnect = onDisconnect;
+}
+
+void ESP8266AutoIOT::setOnEnterConfig(void (*onEnterConfig)())
+{
+  __onEnterConfig__ = onEnterConfig;
+}
+
 void ESP8266AutoIOT::begin()
 {
   _hasBegun = true;
@@ -354,9 +377,13 @@ void ESP8266AutoIOT::begin()
     WiFi.hostname(_accessPoint);
   #endif
 
+  if (__onEnterConfig__ != NULL) {
+    wifiManager.setAPCallback(__handleOnEnterConfig__);
+  }
+
   wifiManager.setSaveConfigCallback(saveConfigCallback);
-  wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
-  wifiManager.setTimeout(AP_TIMEOUT);
+  wifiManager.setConnectTimeout(__CONNECT_TIMEOUT__);
+  wifiManager.setTimeout(__AP_TIMEOUT__);
   wifiManager.setCountry("US");
 
   // WiFiManager custom config
@@ -378,7 +405,7 @@ void ESP8266AutoIOT::begin()
   }
 
   // Update parameters from the new values set in the portal
-  if (shouldSaveConfig) {
+  if (__shouldSaveConfig__) {
     strcpy(_configAccessPoint, custom_hostname.getValue());
     strcpy(_configPassword, custom_password.getValue());
     _writeConfig();
@@ -443,9 +470,15 @@ void ESP8266AutoIOT::loop()
       if (isConnected)
       {
         Serial.println("[INFO] Device is now connected to WiFi.");
+        if (_onConnect != NULL) {
+          _onConnect();
+        }
       } else
       {
         Serial.println("[ERROR] Device has lost it's connection to WiFi.");
+        if (_onDisconnect != NULL) {
+          _onDisconnect();
+        }
       }
     }
 

@@ -58,6 +58,10 @@ class ESP8266AutoIOT
     void post(String path, voidCallbackStr fn);
     void post(String path, stringCallbackStr fn);
 
+    void setOnConnect(voidCallback);
+    void setOnDisconnect(voidCallback);
+    void setOnEnterConfig(voidCallback);
+
   private:
     void _readConfig();
     void _writeConfig();
@@ -80,6 +84,9 @@ class ESP8266AutoIOT
 
     void _handlePostRequestVoidFn(voidCallbackStr fn);
     void _handlePostRequestStrFn(stringCallbackStr fn);
+    
+    void (*_onConnect)() = NULL;
+    void (*_onDisconnect)() = NULL;
 
     bool _hasBegun;
     bool _ledEnabled;

@@ -13,6 +13,9 @@
 #include <ESP8266mDNS.h>        // Included with core
 #include <ArduinoOTA.h>         // Included with core
 
+const unsigned long CONNECT_TIMEOUT = 30; // How long to attempt to connect to saved WiFi before going into AP mode
+const unsigned long AP_TIMEOUT = 60; // Wait 60 Seconds in the config portal before trying again the original WiFi creds
+
 void ESP8266AutoIOT::_setup(bool enableOTA)
 {
   _otaEnabled = enableOTA;
@@ -244,7 +247,33 @@ void ESP8266AutoIOT::begin()
     pinMode(_LED, OUTPUT);
   }
 
-  wifiManager.autoConnect(_accessPoint, _password);
+  // I've been told this line is a good idea
+  WiFi.mode(WIFI_STA);
+  
+  // Set hostname from settings
+  // It's particularly dumb that they don't use the same method
+  #ifdef ESP32
+    WiFi.setHostname(_accessPoint);
+  #else
+    WiFi.hostname(_accessPoint);
+  #endif
+
+  // wifiManager.setSaveConfigCallback(saveConfigCallback);
+  wifiManager.setConnectTimeout(CONNECT_TIMEOUT);
+  wifiManager.setTimeout(AP_TIMEOUT);
+  wifiManager.setCountry("US");
+
+  if (!wifiManager.autoConnect(_accessPoint, _password)) {
+    // If we've hit the config portal timeout, then retstart
+    
+    Serial.println("%%% Failed to connect and hit timeout, restarting");
+    delay(100);
+    ESP.restart();
+
+    // Not sure if this line is necessary
+    delay(5000);
+  }
+
   Serial.println("Connected! to WiFi!");
 
   if (MDNS.begin(_accessPoint))

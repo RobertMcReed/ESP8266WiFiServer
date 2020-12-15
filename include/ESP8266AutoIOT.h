@@ -89,8 +89,11 @@ class ESP8266AutoIOT
 
     char _password[40];
     char _accessPoint[40];
-    char _ACCESS_POINT[40]; // defalt ap for script
-    char _PW[40]; // defalt pw for script
+    char _configPassword[40];
+    char _defaultPassword[40];
+    char _configAccessPoint[40];
+    char _defaultAccessPoint[40];
+
     String _corsOrigin;
     
     int _LED_ON = LOW;

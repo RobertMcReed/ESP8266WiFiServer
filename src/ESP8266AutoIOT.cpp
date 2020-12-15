@@ -28,9 +28,6 @@ void saveConfigCallback () {
 
 void ESP8266AutoIOT::_readConfig()
 {
-  strcpy(_ACCESS_POINT, _accessPoint); // defalt ap for script
-  strcpy(_PW, _password); // defalt pw for script
-
   //read configuration from FS json
   Serial.println("[INFO] Mounting FS...");
 
@@ -53,10 +50,17 @@ void ESP8266AutoIOT::_readConfig()
         serializeJsonPretty(jsonConfig, Serial);
         Serial.println();
         if (!configJsonError) {
+          if (jsonConfig.containsKey("hostname")) {
+            strcpy(_accessPoint, jsonConfig["hostname"]);
+            Serial.print("[INFO] Setting hostname/access point to: ");
+            Serial.println(_accessPoint);
+          }
 
-          strcpy(_accessPoint, jsonConfig["hostname"]);
-          Serial.print("[INFO] Setting hostname/access point to: ");
-          Serial.println(_accessPoint);
+          if (jsonConfig.containsKey("password")) {
+            strcpy(_password, jsonConfig["password"]);
+            Serial.print("[INFO] Setting password to: ");
+            Serial.println(_password);
+          }
         } else {
           Serial.print("[ERROR] Failed to load json config: ");
           Serial.println(configJsonError.c_str());
@@ -72,11 +76,24 @@ void ESP8266AutoIOT::_readConfig()
 }
 
 void ESP8266AutoIOT::_writeConfig() {
-  Serial.println("[INFO] Saving config to /config.json...");
-
   StaticJsonDocument<256> configJsonDoc;
-  configJsonDoc["hostname"] = _accessPoint;
 
+  if ((strcmp(_configAccessPoint, _accessPoint) + strcmp(_configPassword, _password)) == 0) {
+    Serial.println("[INFO] Config is unchanged. No need to write.");
+    return;
+  }
+
+  if (_configAccessPoint && _configAccessPoint != _defaultAccessPoint) {
+    configJsonDoc["hostname"] = _configAccessPoint;
+    strcpy(_accessPoint, _configAccessPoint);
+  }
+
+  if (_configPassword && _configPassword != _defaultPassword) {
+    configJsonDoc["password"] = _configPassword;
+    strcpy(_password, _configPassword);
+  }
+
+  Serial.println("[INFO] Saving config to /config.json...");
   File configFile = LittleFS.open("/config.json", "w");
   if (!configFile) {
     Serial.println("[ERROR] Failed to open config file for writing");
@@ -323,13 +340,14 @@ void ESP8266AutoIOT::begin()
     pinMode(_LED, OUTPUT);
   }
 
+  strcpy(_defaultAccessPoint, _accessPoint);
+  strcpy(_defaultPassword, _password);
   _readConfig(); // update _accessPoint from stored JSON
 
   // I've been told this line is a good idea
   WiFi.mode(WIFI_STA);
   
-  // Set hostname from settings
-  // It's particularly dumb that they don't use the same method
+  // Set hostname from settings/default
   #ifdef ESP32
     WiFi.setHostname(_accessPoint);
   #else
@@ -342,8 +360,10 @@ void ESP8266AutoIOT::begin()
   wifiManager.setCountry("US");
 
   // WiFiManager custom config
-  WiFiManagerParameter custom_hostname("hostname", "Hostname", _accessPoint, 24);
+  WiFiManagerParameter custom_hostname("hostname", "AP/Hostname", _accessPoint, 24);
   wifiManager.addParameter(&custom_hostname);
+  WiFiManagerParameter custom_password("password", "Set OTA Password", _password, 24);
+  wifiManager.addParameter(&custom_password);
 
   if (!wifiManager.autoConnect(_accessPoint, _password)) {
     // If we've hit the config portal timeout, then retstart
@@ -358,7 +378,8 @@ void ESP8266AutoIOT::begin()
 
   // Update parameters from the new values set in the portal
   if (shouldSaveConfig) {
-    strcpy(_accessPoint, custom_hostname.getValue());
+    strcpy(_configAccessPoint, custom_hostname.getValue());
+    strcpy(_configPassword, custom_password.getValue());
     _writeConfig();
   }
 
@@ -431,12 +452,14 @@ void ESP8266AutoIOT::_ledOff()
   _digitalWrite(_LED_OFF);
 }
 
+// reset wifi creds (don't reboot)
 void ESP8266AutoIOT::resetCredentials()
 {
   Serial.println("[WARNING] Resetting credentials!");
   wifiManager.resetSettings();
 }
 
+// reset wifi creds and clear flash (don't reboot)
 void ESP8266AutoIOT::softReset() {
   Serial.println("__SOFT_RESET__");
   Serial.println("Formatting flash memory...");
@@ -447,6 +470,8 @@ void ESP8266AutoIOT::softReset() {
   delay(1000);
 }
 
+// TODO: resets too soon and doesn't clear wifi creds. set flag instead?
+// reset wifi creds, clear flash, and reboot
 void ESP8266AutoIOT::hardReset() {
   Serial.println("__HARD_RESET__");
   Serial.println("Formatting flash memory...");

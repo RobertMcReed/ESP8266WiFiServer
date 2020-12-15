@@ -365,6 +365,7 @@ void ESP8266AutoIOT::begin()
   WiFiManagerParameter custom_password("password", "Set OTA Password", _password, 24);
   wifiManager.addParameter(&custom_password);
 
+  _lastWiFiStatus = false;
   if (!wifiManager.autoConnect(_accessPoint, _password)) {
     // If we've hit the config portal timeout, then retstart
     
@@ -429,9 +430,25 @@ void ESP8266AutoIOT::loop()
     Serial.println("WiFi connectivity is disabled!");
 
     delay(10000);
+    return;
   }
   else
   {
+    bool isConnected = WiFi.status() == WL_CONNECTED;
+    
+    if (isConnected != _lastWiFiStatus) {
+      Serial.println("[INFO] WiFi Connectivity change.");
+
+      _lastWiFiStatus = isConnected;
+      if (isConnected)
+      {
+        Serial.println("[INFO] Device is now connected to WiFi.");
+      } else
+      {
+        Serial.println("[ERROR] Device has lost it's connection to WiFi.");
+      }
+    }
+
     _ledOff();
     server->handleClient();
     _ledOff();

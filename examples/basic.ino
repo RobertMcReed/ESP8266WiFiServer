@@ -80,13 +80,31 @@ String maths(String body) {
   return String(output);
 }
 
+void handleConnect() {
+  Serial.println("The board has connected to WiFi!");
+}
+
+void handleDisconnect() {
+  Serial.println("The board has DISCONNECTED from WiFi!");
+}
+
+void handleConfig() {
+  Serial.println("The configuration portal has been started!");
+}
+
 void setup() {
   // WiFi information is printed, so it's a good idea to start the Serial monitor
   Serial.begin(115200, SERIAL_8N1, SERIAL_TX_ONLY);
   delay(1000);
 
-  // To change the WiFi your device connects to, reset WiFi Credentials
+  // To change the WiFi your device connects to, reset WiFi Credentials (but don't reset board)
   // app.resetCredentials();
+
+  // to change the WiFi and erase the file system (with custom hostname/pw) (but don't reset board)
+  // app.softReset();
+
+  // to change the WiFi, erase the file system, and reset the board (buggy, usually connects back to same WiFi until you physically reset the board again)
+  // app.hardReset
 
   // If you want to allow CORS, indicate so before calling app.begin();
   // app.enableCors(); // "*" All origins accepted
@@ -96,6 +114,17 @@ void setup() {
 
   // disable LED indicator if desired (call before app.begin();)
   // app.disableLED();
+
+  // set callbacks to handle various lifecycle events
+  
+  // called once each time the board (re-)establishes a WiFi connection
+  app.setOnConnect(handleConnect);
+
+  // called once each time the board loses WiFi connection
+  app.setOnDisconnect(handleDisconnect);
+  
+  // called once each time the board starts the Config Portal
+  app.setOnEnterConfig(handleConfig);
 
   // Set an HTML response for GET requests to /   
   app.root(response);

@@ -21,12 +21,11 @@ const unsigned long __AP_TIMEOUT__ = 60; // Wait 60 Seconds in the config portal
 // const char* defaultAp = "esp8266";
 
 
-void (*__onEnterConfig__)() = NULL;
-void __handleOnEnterConfig__(WiFiManager *myWiFiManager);
-
 bool __shouldSaveConfig__ = false;
+void (*__onEnterConfig__)() = NULL;
 
 void __handleOnEnterConfig__(WiFiManager *myWiFiManager) {
+  Serial.println("[INFO] Starting WiFi Configuration Portal.");
   __onEnterConfig__();
 }
 

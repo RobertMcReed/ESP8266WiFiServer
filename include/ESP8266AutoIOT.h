@@ -45,6 +45,8 @@ class ESP8266AutoIOT
     void softReset();
     void hardReset();
     void resetCredentials();
+
+    String getHostname();
     
     void root(String response);
     void root(stringCallback fn);

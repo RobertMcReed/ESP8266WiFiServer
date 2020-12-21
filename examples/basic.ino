@@ -97,6 +97,9 @@ void setup() {
   Serial.begin(115200, SERIAL_8N1, SERIAL_TX_ONLY);
   delay(1000);
 
+  // if you need to fetch the current hostname
+  // String hostname = app.getHostname();
+
   // To change the WiFi your device connects to, reset WiFi Credentials (but don't reset board)
   // app.resetCredentials();
 

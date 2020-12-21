@@ -280,6 +280,10 @@ void ESP8266AutoIOT::_handleNotFound()
   _ledOff();
 }
 
+String ESP8266AutoIOT::getHostname() {
+  return _accessPoint;
+}
+
 void ESP8266AutoIOT::get(String path, stringCallback fn, bool isHtml) {
   server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestStrFn, this, fn, isHtml));
 }

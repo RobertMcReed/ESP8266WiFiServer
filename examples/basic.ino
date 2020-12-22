@@ -100,14 +100,14 @@ void setup() {
   // if you need to fetch the current hostname
   // String hostname = app.getHostname();
 
-  // To change the WiFi your device connects to, reset WiFi Credentials (but don't reset board)
-  // app.resetCredentials();
+  // To change the WiFi your device connects to, reset WiFi Credentials (pass true to also reset the board (ie force the config portal [DO NOT DO THIS IN SETUP!]))
+  // app.resetWiFiCredentials();
 
-  // to change the WiFi and erase the file system (with custom hostname/pw) (but don't reset board)
-  // app.softReset();
+  // To reset hostname/password to the defaults: esp8266/newcouch
+  // app.resetConfig();
 
-  // to change the WiFi, erase the file system, and reset the board (buggy, usually connects back to same WiFi until you physically reset the board again)
-  // app.hardReset
+  // to change the WiFi and erase the file system (with custom hostname/pw) (pass true to also reset the board (ie force the config portal [DO NOT DO THIS IN SETUP!]))
+  // app.resetAllSettings();
 
   // If you want to allow CORS, indicate so before calling app.begin();
   // app.enableCors(); // "*" All origins accepted

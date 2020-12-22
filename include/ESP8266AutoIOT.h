@@ -42,9 +42,11 @@ class ESP8266AutoIOT
     void enableCors();
     void enableCors(String corsOrigin);
     
-    void softReset();
-    void hardReset();
-    void resetCredentials();
+    void resetConfig();
+    void resetAllSettings();
+    void resetAllSettings(bool resetEsp);
+    void resetWiFiCredentials();
+    void resetWiFiCredentials(bool resetEsp);
 
     String getHostname();
     
@@ -65,6 +67,7 @@ class ESP8266AutoIOT
     void setOnEnterConfig(voidCallback);
 
   private:
+    void _flagReboot();
     void _readConfig();
     void _writeConfig();
     void _setup(bool enableOTA);
@@ -96,6 +99,8 @@ class ESP8266AutoIOT
     bool _corsEnabled;
     bool _rootHandled;
     bool _lastWiFiStatus;
+
+    unsigned long _reboot_flagged_at = 0;
 
     char _password[40];
     char _accessPoint[40];

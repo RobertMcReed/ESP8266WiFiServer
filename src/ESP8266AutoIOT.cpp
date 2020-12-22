@@ -104,6 +104,7 @@ void ESP8266AutoIOT::_writeConfig() {
   File configFile = LittleFS.open("/config.json", "w");
   if (!configFile) {
     Serial.println("[ERROR] Failed to open config file for writing");
+    return;
   }
 
   serializeJsonPretty(configJsonDoc, Serial);
@@ -112,6 +113,23 @@ void ESP8266AutoIOT::_writeConfig() {
   serializeJson(configJsonDoc, configFile);
   configFile.close();
   __shouldSaveConfig__ = false;
+}
+
+void ESP8266AutoIOT::resetConfig() {
+  DynamicJsonDocument emptyDoc(0);
+
+  emptyDoc.to<JsonObject>();
+
+  Serial.println("[WARNING] Resetting /config.json...");
+  File configFile = LittleFS.open("/config.json", "w");
+
+  if (!configFile) {
+    Serial.println("[ERROR] Failed to open config file for writing");
+    return;
+  }
+
+  serializeJson(emptyDoc, configFile);
+  configFile.close();
 }
 
 void ESP8266AutoIOT::_setup(bool enableOTA)
@@ -443,6 +461,12 @@ void ESP8266AutoIOT::begin()
 
 void ESP8266AutoIOT::loop()
 {
+  if (_reboot_flagged_at && (millis() - _reboot_flagged_at > 5000))
+  {
+      ESP.restart();
+      delay(5000);
+  }
+
   if (!_hasBegun)
   {
     if (_ledEnabled)
@@ -506,37 +530,38 @@ void ESP8266AutoIOT::_ledOff()
 }
 
 // reset wifi creds (don't reboot)
-void ESP8266AutoIOT::resetCredentials()
+void ESP8266AutoIOT::resetWiFiCredentials()
 {
-  Serial.println("[WARNING] Resetting credentials!");
-  wifiManager.resetSettings();
+  resetWiFiCredentials(false);
 }
 
-// reset wifi creds and clear flash (don't reboot)
-void ESP8266AutoIOT::softReset() {
-  Serial.println("__SOFT_RESET__");
-  Serial.println("Formatting flash memory...");
-  LittleFS.format();
-  delay(100);
-  Serial.println("Resetting WiFi Manager settings...");
+// reset wifi creds and maybe reboot
+void ESP8266AutoIOT::resetWiFiCredentials(bool resetEsp)
+{
+  Serial.println("[WARNING] Resetting WiFi credentials!");
+  wifiManager.disconnect();
+  delay(500);
   wifiManager.resetSettings();
-  delay(1000);
+  delay(500);
+  if (resetEsp) 
+  {
+    _flagReboot();
+  }
 }
 
-// TODO: resets too soon and doesn't clear wifi creds. set flag instead?
-// reset wifi creds, clear flash, and reboot
-void ESP8266AutoIOT::hardReset() {
-  Serial.println("__HARD_RESET__");
-  Serial.println("Formatting flash memory...");
-  LittleFS.format();
-  delay(100);
-  Serial.println("Resetting WiFi Manager settings...");
-  wifiManager.resetSettings();
+// reset wifi creds and reset ap/pw (don't reboot)
+void ESP8266AutoIOT::resetAllSettings() {
+  resetWiFiCredentials(false);
+}
+
+// reset wifi creds and reset ap/pw and maybe reboot
+void ESP8266AutoIOT::resetAllSettings(bool resetEsp) {
+  resetConfig();
   delay(1000);
-  Serial.println("Disconnecting from WiFi...");
-  WiFi.disconnect();
-  delay(1000);
-  Serial.println("Resetting ESP...");
-  ESP.restart();
-  delay(5000);
+  resetWiFiCredentials(resetEsp);
+}
+
+void ESP8266AutoIOT::_flagReboot() {
+  _reboot_flagged_at = millis();
+  Serial.println("Rebooting in 5 seconds...");
 }

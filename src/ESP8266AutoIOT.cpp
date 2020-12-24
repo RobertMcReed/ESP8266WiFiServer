@@ -120,16 +120,20 @@ void ESP8266AutoIOT::resetConfig() {
 
   emptyDoc.to<JsonObject>();
 
-  Serial.println("[WARNING] Resetting /config.json...");
-  File configFile = LittleFS.open("/config.json", "w");
+  if (LittleFS.begin()) {
+    Serial.println("[WARNING] Resetting /config.json...");
+    File configFile = LittleFS.open("/config.json", "w");
 
-  if (!configFile) {
-    Serial.println("[ERROR] Failed to open config file for writing");
-    return;
+    if (!configFile) {
+      Serial.println("[ERROR] Failed to open config file for writing");
+      return;
+    }
+
+    serializeJson(emptyDoc, configFile);
+    configFile.close();
+  } else {
+    Serial.println(F("[ERROR] Could not mount the file system"));
   }
-
-  serializeJson(emptyDoc, configFile);
-  configFile.close();
 }
 
 void ESP8266AutoIOT::_setup(bool enableOTA)
@@ -459,7 +463,7 @@ void ESP8266AutoIOT::begin()
   _ledOff();
 }
 
-void ESP8266AutoIOT::loop()
+bool ESP8266AutoIOT::loop()
 {
   if (_reboot_flagged_at && (millis() - _reboot_flagged_at > 5000))
   {
@@ -480,11 +484,12 @@ void ESP8266AutoIOT::loop()
       _ledOff();
     }
 
-    Serial.println("[WARNING] It looks like you forgot to call app.begin(); in setup()...");
-    Serial.println("WiFi connectivity is disabled!");
+    if (!_reboot_flagged_at) {
+      Serial.println("[WARNING] It looks like you forgot to call app.begin(); in setup()...");
+      Serial.println("WiFi connectivity is disabled!");
+    }
 
-    delay(10000);
-    return;
+    return false;
   }
   else
   {
@@ -517,6 +522,8 @@ void ESP8266AutoIOT::loop()
       ArduinoOTA.handle();
     }
   }
+
+  return true;
 }
 
 void ESP8266AutoIOT::_ledOn()

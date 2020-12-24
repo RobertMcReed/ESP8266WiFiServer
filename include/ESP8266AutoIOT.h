@@ -34,7 +34,7 @@ class ESP8266AutoIOT
     ESP8266WebServer* server;
     WiFiManager wifiManager;
 
-    void loop();
+    bool loop();
     void begin();
     
     void disableLED();

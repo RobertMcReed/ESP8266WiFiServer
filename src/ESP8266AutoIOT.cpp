@@ -473,20 +473,20 @@ bool ESP8266AutoIOT::loop()
 
   if (!_hasBegun)
   {
-    if (_ledEnabled)
-    {
-      _ledOn();
-      delay(500);
-      _ledOff();
-      delay(500);
-      _ledOn();
-      delay(500);
-      _ledOff();
-    }
-
     if (!_reboot_flagged_at) {
       Serial.println("[WARNING] It looks like you forgot to call app.begin(); in setup()...");
       Serial.println("WiFi connectivity is disabled!");
+
+      if (_ledEnabled)
+      {
+        _ledOn();
+        delay(500);
+        _ledOff();
+        delay(500);
+        _ledOn();
+        delay(500);
+        _ledOff();
+      }
     }
 
     return false;

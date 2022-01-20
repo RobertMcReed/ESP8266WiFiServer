@@ -59,6 +59,7 @@ class ESP8266AutoIOT
     void get(String path, String response, bool isHtml);
     void get(String path, stringCallback fn, bool isHtml);
     
+    void post(String path, voidCallback fn);
     void post(String path, voidCallbackStr fn);
     void post(String path, stringCallbackStr fn);
 
@@ -89,6 +90,7 @@ class ESP8266AutoIOT
 
     void _handlePostRequestVoidFn(voidCallbackStr fn);
     void _handlePostRequestStrFn(stringCallbackStr fn);
+    void _handlePostRequestNoBodyVoidFn(voidCallback fn);
     
     void (*_onConnect)() = NULL;
     void (*_onDisconnect)() = NULL;

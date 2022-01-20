@@ -284,6 +284,21 @@ void ESP8266AutoIOT::_handlePostRequestStrFn(stringCallbackStr fn)
   _ledOff();
 }
 
+
+void ESP8266AutoIOT::_handlePostRequestNoBodyVoidFn(voidCallback fn)
+{
+  _ledOn();
+  if (server->method() == HTTP_POST) {
+    _sendCorsHeaderIfEnabled();
+
+    server->send(200);
+    fn();
+  } else {
+    server->send(405, "text/plain", "Method Not Allowed");
+  }
+  _ledOff();
+}
+
 void ESP8266AutoIOT::_handleNotFound()
 {
   _ledOn();
@@ -332,6 +347,10 @@ void ESP8266AutoIOT::post(String path, voidCallbackStr fn) {
 
 void ESP8266AutoIOT::post(String path, stringCallbackStr fn) {
   server->on(path, std::bind(&ESP8266AutoIOT::_handlePostRequestStrFn, this, fn));
+}
+
+void ESP8266AutoIOT::post(String path, voidCallback fn) {
+  server->on(path, std::bind(&ESP8266AutoIOT::_handlePostRequestNoBodyVoidFn, this, fn));
 }
 
 void ESP8266AutoIOT::root(stringCallback fn) {

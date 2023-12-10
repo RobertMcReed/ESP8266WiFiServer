@@ -255,7 +255,7 @@ void ESP8266AutoIOT::_handlePostRequestVoidFn(voidCallbackStr fn)
       server->send(400);
       return;
     }
-    server->send(200);
+    server->send(204);
     String body = server->arg("plain");
     fn(body);
   } else {
@@ -291,7 +291,7 @@ void ESP8266AutoIOT::_handlePostRequestNoBodyVoidFn(voidCallback fn)
   if (server->method() == HTTP_POST) {
     _sendCorsHeaderIfEnabled();
 
-    server->send(200);
+    server->send(204);
     fn();
   } else {
     server->send(405, "text/plain", "Method Not Allowed");

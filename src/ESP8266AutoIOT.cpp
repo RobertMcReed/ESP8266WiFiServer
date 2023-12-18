@@ -6,45 +6,49 @@
 
 #include "ESP8266AutoIOT.h"
 #include "Arduino.h"
-#include <ESP8266WiFi.h>        //https://github.com/esp8266/Arduino
-#include <DNSServer.h>          // Included with core
-#include <ESP8266WebServer.h>   // Included with core
-#include <WiFiManager.h>        //https://github.com/RobertMcReed/WiFiManager.git#ota
-#include <ESP8266mDNS.h>        // Included with core
-#include <ArduinoOTA.h>         // Included with core
-#include <ArduinoJson.h>        // https://github.com/bblanchon/ArduinoJson ~v6.x.x
-#include <WiFiUdp.h>            // For the below
+#include <ESP8266WiFi.h>      //https://github.com/esp8266/Arduino
+#include <DNSServer.h>        // Included with core
+#include <ESP8266WebServer.h> // Included with core
+#include <WiFiManager.h>      //https://github.com/RobertMcReed/WiFiManager.git#ota
+#include <ESP8266mDNS.h>      // Included with core
+#include <ArduinoOTA.h>       // Included with core
+#include <ArduinoJson.h>      // https://github.com/bblanchon/ArduinoJson ~v6.x.x
+#include <WiFiUdp.h>          // For the below
 #include <LittleFS.h>
 
 const unsigned long __CONNECT_TIMEOUT__ = 30; // How long to attempt to connect to saved WiFi before going into AP mode
-const unsigned long __AP_TIMEOUT__ = 60; // Wait 60 Seconds in the config portal before trying again the original WiFi creds
+const unsigned long __AP_TIMEOUT__ = 60;      // Wait 60 Seconds in the config portal before trying again the original WiFi creds
 // const char* defaultAp = "esp8266";
-
 
 bool __shouldSaveConfig__ = false;
 void (*__onEnterConfig__)() = NULL;
 
-void __handleOnEnterConfig__(WiFiManager *myWiFiManager) {
+void __handleOnEnterConfig__(WiFiManager *myWiFiManager)
+{
   Serial.println("[INFO] Starting WiFi Configuration Portal.");
   __onEnterConfig__();
 }
 
-void saveConfigCallback () {
+void saveConfigCallback()
+{
   __shouldSaveConfig__ = true;
 }
 
 void ESP8266AutoIOT::_readConfig()
 {
-  //read configuration from FS json
+  // read configuration from FS json
   Serial.println("[INFO] Mounting FS...");
 
-  if (LittleFS.begin()) {
+  if (LittleFS.begin())
+  {
     Serial.println("[INFO] Mounted file system.");
-    if (LittleFS.exists("/config.json")) {
-      //file exists, reading and loading
+    if (LittleFS.exists("/config.json"))
+    {
+      // file exists, reading and loading
       Serial.println("[INFO] Reading config file...");
       File configFile = LittleFS.open("/config.json", "r");
-      if (configFile) {
+      if (configFile)
+      {
         Serial.println("[INFO] Opened config file:");
         size_t size = configFile.size();
         // Allocate a buffer to store contents of the file.
@@ -56,53 +60,67 @@ void ESP8266AutoIOT::_readConfig()
 
         serializeJsonPretty(jsonConfig, Serial);
         Serial.println();
-        if (!configJsonError) {
-          if (jsonConfig.containsKey("hostname")) {
+        if (!configJsonError)
+        {
+          if (jsonConfig.containsKey("hostname"))
+          {
             strcpy(_accessPoint, jsonConfig["hostname"]);
             Serial.print("[INFO] Setting hostname/access point to: ");
             Serial.println(_accessPoint);
           }
 
-          if (jsonConfig.containsKey("password")) {
+          if (jsonConfig.containsKey("password"))
+          {
             strcpy(_password, jsonConfig["password"]);
             Serial.print("[INFO] Setting password to: ");
             Serial.println(_password);
           }
-        } else {
+        }
+        else
+        {
           Serial.print("[ERROR] Failed to load json config: ");
           Serial.println(configJsonError.c_str());
         }
       }
-    } else {
+    }
+    else
+    {
       Serial.println("[INFO] /config.json not found. Using default config.");
     }
-  } else {
+  }
+  else
+  {
     Serial.println("[ERROR] Failed to mount FS");
   }
   Serial.println();
 }
 
-void ESP8266AutoIOT::_writeConfig() {
+void ESP8266AutoIOT::_writeConfig()
+{
   StaticJsonDocument<256> configJsonDoc;
 
-  if ((strcmp(_configAccessPoint, _accessPoint) + strcmp(_configPassword, _password)) == 0) {
+  if ((strcmp(_configAccessPoint, _accessPoint) + strcmp(_configPassword, _password)) == 0)
+  {
     Serial.println("[INFO] Config is unchanged. No need to write.");
     return;
   }
 
-  if (_configAccessPoint && _configAccessPoint != _defaultAccessPoint) {
+  if (_configAccessPoint && _configAccessPoint != _defaultAccessPoint)
+  {
     configJsonDoc["hostname"] = _configAccessPoint;
     strcpy(_accessPoint, _configAccessPoint);
   }
 
-  if (_configPassword && _configPassword != _defaultPassword) {
+  if (_configPassword && _configPassword != _defaultPassword)
+  {
     configJsonDoc["password"] = _configPassword;
     strcpy(_password, _configPassword);
   }
 
   Serial.println("[INFO] Saving config to /config.json...");
   File configFile = LittleFS.open("/config.json", "w");
-  if (!configFile) {
+  if (!configFile)
+  {
     Serial.println("[ERROR] Failed to open config file for writing");
     return;
   }
@@ -115,23 +133,28 @@ void ESP8266AutoIOT::_writeConfig() {
   __shouldSaveConfig__ = false;
 }
 
-void ESP8266AutoIOT::resetConfig() {
+void ESP8266AutoIOT::resetConfig()
+{
   DynamicJsonDocument emptyDoc(0);
 
   emptyDoc.to<JsonObject>();
 
-  if (LittleFS.begin()) {
+  if (LittleFS.begin())
+  {
     Serial.println("[WARNING] Resetting /config.json...");
     File configFile = LittleFS.open("/config.json", "w");
 
-    if (!configFile) {
+    if (!configFile)
+    {
       Serial.println("[ERROR] Failed to open config file for writing");
       return;
     }
 
     serializeJson(emptyDoc, configFile);
     configFile.close();
-  } else {
+  }
+  else
+  {
     Serial.println(F("[ERROR] Could not mount the file system"));
   }
 }
@@ -143,12 +166,12 @@ void ESP8266AutoIOT::_setup(bool enableOTA)
 
   if (!_accessPoint)
   {
-    strcpy(_accessPoint, (char*)"esp8266");
+    strcpy(_accessPoint, (char *)"esp8266");
   }
 
   if (!_password)
   {
-    strcpy(_password, (char*)"newcouch");
+    strcpy(_password, (char *)"newcouch");
   }
 
   _LED_ON = LOW;
@@ -173,7 +196,7 @@ ESP8266AutoIOT::ESP8266AutoIOT(bool enableOTA)
   _setup(enableOTA);
 }
 
-ESP8266AutoIOT::ESP8266AutoIOT(char* accessPoint, char* password)
+ESP8266AutoIOT::ESP8266AutoIOT(char *accessPoint, char *password)
 {
   strcpy(_accessPoint, accessPoint);
   strcpy(_password, password);
@@ -181,7 +204,7 @@ ESP8266AutoIOT::ESP8266AutoIOT(char* accessPoint, char* password)
   _setup(true);
 }
 
-ESP8266AutoIOT::ESP8266AutoIOT(char* accessPoint, char* password, bool enableOTA)
+ESP8266AutoIOT::ESP8266AutoIOT(char *accessPoint, char *password, bool enableOTA)
 {
   strcpy(_accessPoint, accessPoint);
   strcpy(_password, password);
@@ -191,28 +214,31 @@ ESP8266AutoIOT::ESP8266AutoIOT(char* accessPoint, char* password, bool enableOTA
 
 void ESP8266AutoIOT::_digitalWrite(int value)
 {
-   if (_ledEnabled)
-   {
-     digitalWrite(_LED, value);
-   }
+  if (_ledEnabled)
+  {
+    digitalWrite(_LED, value);
+  }
 }
 
 void ESP8266AutoIOT::_sendCorsHeaderIfEnabled()
 {
-   if (_corsEnabled)
-   {
-     server->sendHeader("Access-Control-Allow-Origin", _corsOrigin);
-   }
+  if (_corsEnabled)
+  {
+    server->sendHeader("Access-Control-Allow-Origin", _corsOrigin);
+  }
 }
 
 void ESP8266AutoIOT::_handleGetRequestVoidFn(voidCallback fn)
 {
   _ledOn();
-  if (server->method() == HTTP_GET) {
+  if (server->method() == HTTP_GET)
+  {
     _sendCorsHeaderIfEnabled();
     fn();
     server->send(200, "text/plain", "Success");
-  } else {
+  }
+  else
+  {
     server->send(405, "text/plain", "Method Not Allowed");
   }
   _ledOff();
@@ -221,11 +247,14 @@ void ESP8266AutoIOT::_handleGetRequestVoidFn(voidCallback fn)
 void ESP8266AutoIOT::_handleGetRequestStr(String response, bool isHtml)
 {
   _ledOn();
-  if (server->method() == HTTP_GET) {
+  if (server->method() == HTTP_GET)
+  {
     _sendCorsHeaderIfEnabled();
-    const char* contentType = isHtml ? "text/html" : "text/plain";
+    const char *contentType = isHtml ? "text/html" : "text/plain";
     server->send(200, contentType, response);
-  } else {
+  }
+  else
+  {
     server->send(405, "text/plain", "Method Not Allowed");
   }
   _ledOff();
@@ -234,12 +263,15 @@ void ESP8266AutoIOT::_handleGetRequestStr(String response, bool isHtml)
 void ESP8266AutoIOT::_handleGetRequestStrFn(stringCallback fn, bool isHtml)
 {
   _ledOn();
-  if (server->method() == HTTP_GET) {
+  if (server->method() == HTTP_GET)
+  {
     _sendCorsHeaderIfEnabled();
     String response = fn();
-    const char* contentType = isHtml ? "text/html" : "application/json";
+    const char *contentType = isHtml ? "text/html" : "application/json";
     server->send(200, contentType, response);
-  } else {
+  }
+  else
+  {
     server->send(405, "text/plain", "Method Not Allowed");
   }
   _ledOff();
@@ -248,52 +280,84 @@ void ESP8266AutoIOT::_handleGetRequestStrFn(stringCallback fn, bool isHtml)
 void ESP8266AutoIOT::_handlePostRequestVoidFn(voidCallbackStr fn)
 {
   _ledOn();
-  if (server->method() == HTTP_POST) {
+  if (server->method() == HTTP_POST)
+  {
     _sendCorsHeaderIfEnabled();
 
-    if (server->hasArg("plain") == false) {
+    if (server->hasArg("plain") == false)
+    {
       server->send(400);
       return;
     }
     server->send(204);
     String body = server->arg("plain");
     fn(body);
-  } else {
+  }
+  else
+  {
     server->send(405, "text/plain", "Method Not Allowed");
   }
   _ledOff();
 }
 
-
 void ESP8266AutoIOT::_handlePostRequestStrFn(stringCallbackStr fn)
 {
   _ledOn();
-  if (server->method() == HTTP_POST) {
+  if (server->method() == HTTP_POST)
+  {
     _sendCorsHeaderIfEnabled();
 
-    if (server->hasArg("plain") == false) {
+    if (server->hasArg("plain") == false)
+    {
       server->send(400);
       return;
     }
     String body = server->arg("plain");
     String response = fn(body);
     server->send(200, "application/json", response);
-  } else {
+  }
+  else
+  {
     server->send(405, "text/plain", "Method Not Allowed");
   }
   _ledOff();
 }
 
+void ESP8266AutoIOT::_handlePostRequestStrRspFn(stringCallbackStrRsp fn)
+{
+  _ledOn();
+  if (server->method() == HTTP_POST)
+  {
+    _sendCorsHeaderIfEnabled();
+
+    if (server->hasArg("plain") == false)
+    {
+      server->send(400);
+      return;
+    }
+    String body = server->arg("plain");
+    StringResponse response = fn(body);
+    server->send(response.code, "application/json", response.body);
+  }
+  else
+  {
+    server->send(405, "text/plain", "Method Not Allowed");
+  }
+  _ledOff();
+}
 
 void ESP8266AutoIOT::_handlePostRequestNoBodyVoidFn(voidCallback fn)
 {
   _ledOn();
-  if (server->method() == HTTP_POST) {
+  if (server->method() == HTTP_POST)
+  {
     _sendCorsHeaderIfEnabled();
 
     server->send(204);
     fn();
-  } else {
+  }
+  else
+  {
     server->send(405, "text/plain", "Method Not Allowed");
   }
   _ledOff();
@@ -310,55 +374,72 @@ void ESP8266AutoIOT::_handleNotFound()
   message += "\nArguments: ";
   message += server->args();
   message += "\n";
-  for (uint8_t i = 0; i < server->args(); i++) {
+  for (uint8_t i = 0; i < server->args(); i++)
+  {
     message += " " + server->argName(i) + ": " + server->arg(i) + "\n";
   }
   server->send(404, "text/plain", message);
   _ledOff();
 }
 
-String ESP8266AutoIOT::getHostname() {
+String ESP8266AutoIOT::getHostname()
+{
   return _accessPoint;
 }
 
-void ESP8266AutoIOT::get(String path, stringCallback fn, bool isHtml) {
+void ESP8266AutoIOT::get(String path, stringCallback fn, bool isHtml)
+{
   server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestStrFn, this, fn, isHtml));
 }
 
-void ESP8266AutoIOT::get(String path, stringCallback fn) {
+void ESP8266AutoIOT::get(String path, stringCallback fn)
+{
   server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestStrFn, this, fn, false));
 }
 
-void ESP8266AutoIOT::get(String path, voidCallback fn) {
+void ESP8266AutoIOT::get(String path, voidCallback fn)
+{
   server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestVoidFn, this, fn));
 }
 
-void ESP8266AutoIOT::get(String path, String response) {
+void ESP8266AutoIOT::get(String path, String response)
+{
   server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestStr, this, response, false));
 }
 
-void ESP8266AutoIOT::get(String path, String response, bool isHtml) {
+void ESP8266AutoIOT::get(String path, String response, bool isHtml)
+{
   server->on(path, std::bind(&ESP8266AutoIOT::_handleGetRequestStr, this, response, isHtml));
 }
 
-void ESP8266AutoIOT::post(String path, voidCallbackStr fn) {
+void ESP8266AutoIOT::post(String path, voidCallbackStr fn)
+{
   server->on(path, std::bind(&ESP8266AutoIOT::_handlePostRequestVoidFn, this, fn));
 }
 
-void ESP8266AutoIOT::post(String path, stringCallbackStr fn) {
+void ESP8266AutoIOT::post(String path, stringCallbackStr fn)
+{
   server->on(path, std::bind(&ESP8266AutoIOT::_handlePostRequestStrFn, this, fn));
 }
 
-void ESP8266AutoIOT::post(String path, voidCallback fn) {
+void ESP8266AutoIOT::post(String path, stringCallbackStrRsp fn)
+{
+  server->on(path, std::bind(&ESP8266AutoIOT::_handlePostRequestStrRspFn, this, fn));
+}
+
+void ESP8266AutoIOT::post(String path, voidCallback fn)
+{
   server->on(path, std::bind(&ESP8266AutoIOT::_handlePostRequestNoBodyVoidFn, this, fn));
 }
 
-void ESP8266AutoIOT::root(stringCallback fn) {
+void ESP8266AutoIOT::root(stringCallback fn)
+{
   _rootHandled = true;
   get("/", fn, true);
 }
 
-void ESP8266AutoIOT::root(String response) {
+void ESP8266AutoIOT::root(String response)
+{
   _rootHandled = true;
   get("/", response, true);
 }
@@ -413,15 +494,16 @@ void ESP8266AutoIOT::begin()
 
   // I've been told this line is a good idea
   WiFi.mode(WIFI_STA);
-  
-  // Set hostname from settings/default
-  #ifdef ESP32
-    WiFi.setHostname(_accessPoint);
-  #else
-    WiFi.hostname(_accessPoint);
-  #endif
 
-  if (__onEnterConfig__ != NULL) {
+// Set hostname from settings/default
+#ifdef ESP32
+  WiFi.setHostname(_accessPoint);
+#else
+  WiFi.hostname(_accessPoint);
+#endif
+
+  if (__onEnterConfig__ != NULL)
+  {
     wifiManager.setAPCallback(__handleOnEnterConfig__);
   }
 
@@ -437,9 +519,10 @@ void ESP8266AutoIOT::begin()
   wifiManager.addParameter(&custom_password);
 
   _lastWiFiStatus = false;
-  if (!wifiManager.autoConnect(_accessPoint, _password)) {
+  if (!wifiManager.autoConnect(_accessPoint, _password))
+  {
     // If we've hit the config portal timeout, then retstart
-    
+
     Serial.println("[ERROR] Failed to connect and hit timeout, restarting after 10 seconds...");
     delay(10000);
     ESP.restart();
@@ -449,7 +532,8 @@ void ESP8266AutoIOT::begin()
   }
 
   // Update parameters from the new values set in the portal
-  if (__shouldSaveConfig__) {
+  if (__shouldSaveConfig__)
+  {
     strcpy(_configAccessPoint, custom_hostname.getValue());
     strcpy(_configPassword, custom_password.getValue());
     _writeConfig();
@@ -472,11 +556,14 @@ void ESP8266AutoIOT::begin()
   server->begin();
   Serial.println("[INFO] HTTP server started!");
 
-  if (_otaEnabled) {
+  if (_otaEnabled)
+  {
     ArduinoOTA.setPassword(_password);
     ArduinoOTA.begin();
     Serial.println("[INFO] ArduinoOTA enabled!");
-  } else {
+  }
+  else
+  {
     Serial.println("[INFO] ArduinoOTA disabled.");
   }
   _ledOff();
@@ -486,13 +573,14 @@ bool ESP8266AutoIOT::loop()
 {
   if (_reboot_flagged_at && (millis() - _reboot_flagged_at > 5000))
   {
-      ESP.restart();
-      delay(5000);
+    ESP.restart();
+    delay(5000);
   }
 
   if (!_hasBegun)
   {
-    if (!_reboot_flagged_at) {
+    if (!_reboot_flagged_at)
+    {
       Serial.println("[WARNING] It looks like you forgot to call app.begin(); in setup()...");
       Serial.println("WiFi connectivity is disabled!");
 
@@ -513,21 +601,25 @@ bool ESP8266AutoIOT::loop()
   else
   {
     bool isConnected = WiFi.status() == WL_CONNECTED;
-    
-    if (isConnected != _lastWiFiStatus) {
+
+    if (isConnected != _lastWiFiStatus)
+    {
       Serial.println("[INFO] WiFi Connectivity change.");
 
       _lastWiFiStatus = isConnected;
       if (isConnected)
       {
         Serial.println("[INFO] Device is now connected to WiFi.");
-        if (_onConnect != NULL) {
+        if (_onConnect != NULL)
+        {
           _onConnect();
         }
-      } else
+      }
+      else
       {
         Serial.println("[ERROR] Device has lost it's connection to WiFi.");
-        if (_onDisconnect != NULL) {
+        if (_onDisconnect != NULL)
+        {
           _onDisconnect();
         }
       }
@@ -569,25 +661,28 @@ void ESP8266AutoIOT::resetWiFiCredentials(bool resetEsp)
   delay(500);
   wifiManager.resetSettings();
   delay(500);
-  if (resetEsp) 
+  if (resetEsp)
   {
     _flagReboot();
   }
 }
 
 // reset wifi creds and reset ap/pw (don't reboot)
-void ESP8266AutoIOT::resetAllSettings() {
+void ESP8266AutoIOT::resetAllSettings()
+{
   resetWiFiCredentials(false);
 }
 
 // reset wifi creds and reset ap/pw and maybe reboot
-void ESP8266AutoIOT::resetAllSettings(bool resetEsp) {
+void ESP8266AutoIOT::resetAllSettings(bool resetEsp)
+{
   resetConfig();
   delay(1000);
   resetWiFiCredentials(resetEsp);
 }
 
-void ESP8266AutoIOT::_flagReboot() {
+void ESP8266AutoIOT::_flagReboot()
+{
   _reboot_flagged_at = millis();
   Serial.println("Rebooting in 5 seconds...");
 }

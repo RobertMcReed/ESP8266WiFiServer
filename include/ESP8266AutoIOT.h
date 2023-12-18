@@ -8,114 +8,123 @@
 #define ESP8266AutoIOT_h
 
 #include "Arduino.h"
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
+#include <ESP8266WiFi.h> //https://github.com/esp8266/Arduino
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-#include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> //https://github.com/tzapu/WiFiManager
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
-#include <ArduinoJson.h>         // https://github.com/bblanchon/ArduinoJson ~v6.x.x
-#include <WiFiUdp.h>             // For the below
+#include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson ~v6.x.x
+#include <WiFiUdp.h>     // For the below
 #include <LittleFS.h>
 
-typedef void (*voidCallback) ();
-typedef void (*voidCallbackStr) (String);
-typedef String (*stringCallback) ();
-typedef String (*stringCallbackStr) (String);
+struct StringResponse
+{
+  uint16_t code;
+  String body;
+};
+
+typedef void (*voidCallback)();
+typedef void (*voidCallbackStr)(String);
+typedef String (*stringCallback)();
+typedef String (*stringCallbackStr)(String);
+typedef StringResponse (*stringCallbackStrRsp)(String);
 
 class ESP8266AutoIOT
 {
-  public:
-    ESP8266AutoIOT();
-    ESP8266AutoIOT(bool enableOTA);
-    ESP8266AutoIOT(char* accessPoint, char* password);
-    ESP8266AutoIOT(char* accessPoint, char* password, bool enableOTA);
+public:
+  ESP8266AutoIOT();
+  ESP8266AutoIOT(bool enableOTA);
+  ESP8266AutoIOT(char *accessPoint, char *password);
+  ESP8266AutoIOT(char *accessPoint, char *password, bool enableOTA);
 
-    ESP8266WebServer* server;
-    WiFiManager wifiManager;
+  ESP8266WebServer *server;
+  WiFiManager wifiManager;
 
-    bool loop();
-    void begin();
-    
-    void disableLED();
-    
-    void enableCors();
-    void enableCors(String corsOrigin);
-    
-    void resetConfig();
-    void resetAllSettings();
-    void resetAllSettings(bool resetEsp);
-    void resetWiFiCredentials();
-    void resetWiFiCredentials(bool resetEsp);
+  bool loop();
+  void begin();
 
-    String getHostname();
-    
-    void root(String response);
-    void root(stringCallback fn);
-    
-    void get(String path, String response);
-    void get(String path, voidCallback fn);
-    void get(String path, stringCallback fn);
-    void get(String path, String response, bool isHtml);
-    void get(String path, stringCallback fn, bool isHtml);
-    
-    void post(String path, voidCallback fn);
-    void post(String path, voidCallbackStr fn);
-    void post(String path, stringCallbackStr fn);
+  void disableLED();
 
-    void setOnConnect(voidCallback);
-    void setOnDisconnect(voidCallback);
-    void setOnEnterConfig(voidCallback);
+  void enableCors();
+  void enableCors(String corsOrigin);
 
-  private:
-    void _flagReboot();
-    void _readConfig();
-    void _writeConfig();
-    void _setup(bool enableOTA);
+  void resetConfig();
+  void resetAllSettings();
+  void resetAllSettings(bool resetEsp);
+  void resetWiFiCredentials();
+  void resetWiFiCredentials(bool resetEsp);
 
-    void _ledOn();
-    void _ledOff();
-    void _enableOTA();
-    void _disableOTA();
-    void _digitalWrite(int value);
+  String getHostname();
 
-    void _handleNotFound();
-    void _handleDefaultRoot();
-    
-    void _sendCorsHeaderIfEnabled();
+  void root(String response);
+  void root(stringCallback fn);
 
-    void _handleGetRequestVoidFn(voidCallback fn);
-    void _handleGetRequestStr(String response, bool isHtml);
-    void _handleGetRequestStrFn(stringCallback fn, bool isHtml);
+  void get(String path, String response);
+  void get(String path, voidCallback fn);
+  void get(String path, stringCallback fn);
+  void get(String path, String response, bool isHtml);
+  void get(String path, stringCallback fn, bool isHtml);
 
-    void _handlePostRequestVoidFn(voidCallbackStr fn);
-    void _handlePostRequestStrFn(stringCallbackStr fn);
-    void _handlePostRequestNoBodyVoidFn(voidCallback fn);
-    
-    void (*_onConnect)() = NULL;
-    void (*_onDisconnect)() = NULL;
+  void post(String path, voidCallback fn);
+  void post(String path, voidCallbackStr fn);
+  void post(String path, stringCallbackStr fn);
+  void post(String path, stringCallbackStrRsp fn);
 
-    bool _hasBegun;
-    bool _ledEnabled;
-    bool _otaEnabled;
-    bool _corsEnabled;
-    bool _rootHandled;
-    bool _lastWiFiStatus;
+  void setOnConnect(voidCallback);
+  void setOnDisconnect(voidCallback);
+  void setOnEnterConfig(voidCallback);
 
-    unsigned long _reboot_flagged_at = 0;
+private:
+  void _flagReboot();
+  void _readConfig();
+  void _writeConfig();
+  void _setup(bool enableOTA);
 
-    char _password[40];
-    char _accessPoint[40];
-    char _configPassword[40];
-    char _defaultPassword[40];
-    char _configAccessPoint[40];
-    char _defaultAccessPoint[40];
+  void _ledOn();
+  void _ledOff();
+  void _enableOTA();
+  void _disableOTA();
+  void _digitalWrite(int value);
 
-    String _corsOrigin;
-    
-    int _LED_ON = LOW;
-    int _LED_OFF = HIGH;
-    int _LED = LED_BUILTIN;
+  void _handleNotFound();
+  void _handleDefaultRoot();
+
+  void _sendCorsHeaderIfEnabled();
+
+  void _handleGetRequestVoidFn(voidCallback fn);
+  void _handleGetRequestStr(String response, bool isHtml);
+  void _handleGetRequestStrFn(stringCallback fn, bool isHtml);
+
+  void _handlePostRequestVoidFn(voidCallbackStr fn);
+  void _handlePostRequestStrFn(stringCallbackStr fn);
+  void _handlePostRequestStrRspFn(stringCallbackStrRsp fn);
+  void _handlePostRequestNoBodyVoidFn(voidCallback fn);
+
+  void (*_onConnect)() = NULL;
+  void (*_onDisconnect)() = NULL;
+
+  bool _hasBegun;
+  bool _ledEnabled;
+  bool _otaEnabled;
+  bool _corsEnabled;
+  bool _rootHandled;
+  bool _lastWiFiStatus;
+
+  unsigned long _reboot_flagged_at = 0;
+
+  char _password[40];
+  char _accessPoint[40];
+  char _configPassword[40];
+  char _defaultPassword[40];
+  char _configAccessPoint[40];
+  char _defaultAccessPoint[40];
+
+  String _corsOrigin;
+
+  int _LED_ON = LOW;
+  int _LED_OFF = HIGH;
+  int _LED = LED_BUILTIN;
 };
 
 #endif
